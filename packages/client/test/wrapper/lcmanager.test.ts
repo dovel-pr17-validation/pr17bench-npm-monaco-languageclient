@@ -1,0 +1,77 @@
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) 2024 TypeFox and others.
+ * Licensed under the MIT License. See LICENSE in the package root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+/* oxlint-disable dot-notation */
+
+import { LogLevel } from '@codingame/monaco-vscode-api';
+import type { ILogger } from '@codingame/monaco-vscode-log-service-override';
+import { delayExecution } from 'monaco-languageclient/common';
+import { LanguageClientManager } from 'monaco-languageclient/lcwrapper';
+import { MonacoVscodeApiWrapper, type MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
+import { beforeAll, describe, expect, test } from 'vitest';
+import { createDefaultLanguageClientConfig, createMonacoEditorDiv } from '../support/helper.js';
+
+describe('Test LanguageClientWrapper', { tags: ['main'] }, () => {
+  beforeAll(async () => {
+    const apiConfig: MonacoVscodeApiConfig = {
+      $type: 'extended',
+      viewsConfig: {
+        $type: 'EditorService',
+        htmlContainer: createMonacoEditorDiv()
+      }
+    };
+    const apiWrapper = new MonacoVscodeApiWrapper(apiConfig);
+    await apiWrapper.start();
+  });
+
+  test('restart with languageclient', async () => {
+    let error = false;
+    const lcManager = new LanguageClientManager();
+    const languageClientConfig = createDefaultLanguageClientConfig();
+
+    const lcConfigs = {
+      configs: {
+        langium: languageClientConfig
+      }
+    };
+
+    try {
+      expect(() => lcManager.setConfigs(lcConfigs)).not.toThrowError();
+      await expect(lcManager.start()).resolves.toBeDefined();
+      await expect(lcManager.dispose()).resolves.toBeUndefined();
+
+      await delayExecution(1000);
+
+      expect(() => lcManager.setConfigs(lcConfigs)).not.toThrowError();
+      await expect(lcManager.start()).resolves.toBeDefined();
+      await expect(lcManager.dispose()).resolves.toBeUndefined();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error(`Unexpected error occurred: ${message}`);
+      error = true;
+    }
+
+    expect(error).toBe(false);
+  });
+
+  test('set verify log levels are applied', async () => {
+    const lcsManager = new LanguageClientManager();
+    let logLevel = (lcsManager['logger'] as ILogger).getLevel();
+    expect(logLevel).toBe(LogLevel.Info);
+    expect(logLevel).toBe(3);
+
+    lcsManager.setLogLevel(LogLevel.Debug);
+    logLevel = (lcsManager['logger'] as ILogger).getLevel();
+    expect(logLevel).toBe(LogLevel.Debug);
+    expect(logLevel).toBe(2);
+  });
+
+  test('Check started to be false if nothing is configured', async () => {
+    const lcsManager = new LanguageClientManager();
+    expect(lcsManager.haveLanguageClients()).toBe(false);
+    expect(lcsManager['languageClientWrappers'].size).toBe(0);
+    expect(lcsManager.isStarted()).toBe(false);
+  });
+});

@@ -1,0 +1,159 @@
+{
+  "name": "monaco-languageclient-examples",
+  "version": "2026.9.2",
+  "private": "true",
+  "description": "Monaco Language client examples",
+  "homepage": "https://github.com/TypeFox/monaco-languageclient/blob/main/packages/examples/README.md",
+  "bugs": {
+    "url": "https://github.com/TypeFox/monaco-languageclient/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "TypeFox GmbH",
+    "url": "https://www.typefox.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TypeFox/monaco-languageclient.git",
+    "directory": "packages/examples"
+  },
+  "files": [
+    "dist",
+    "src",
+    "test",
+    "*.html",
+    "*.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "default": "./dist/node.js"
+    },
+    "./json-client": {
+      "types": "./dist/json/client/extended.d.ts",
+      "import": "./dist/json/client/extended.js",
+      "default": "./dist/json/client/extended.js"
+    },
+    "./python-client": {
+      "types": "./dist/python/client/main.d.ts",
+      "import": "./dist/python/client/main.js",
+      "default": "./dist/python/client/main.js"
+    },
+    "./worker/langium": {
+      "types": "./dist/langium/langium-dsl/worker/langium-server.d.ts",
+      "import": "./dist/langium/langium-dsl/worker/langium-server.js",
+      "default": "./dist/langium/langium-dsl/worker/langium-server.js"
+    },
+    "./worker/statemachine": {
+      "types": "./dist/langium/statemachine/worker/statemachine-server.d.ts",
+      "import": "./dist/langium/statemachine/worker/statemachine-server.js",
+      "default": "./dist/langium/statemachine/worker/statemachine-server.js"
+    }
+  },
+  "scripts": {
+    "clean": "tsx ../../scripts/remove.ts dist *.tsbuildinfo production",
+    "compile": "tsc --build tsconfig.src.json",
+    "resources:download": "tsx ./resources/scripts/downloadResources.ts",
+    "build:msg": "echo Building main examples:",
+    "build": "npm run build:msg && npm run clean && npm run compile",
+    "init": "npm run resources:download && npm run extract:docker",
+    "start:server:groovy": "tsx src/groovy/server/direct.ts",
+    "start:server:jdtls": "tsx src/eclipse.jdt.ls/server/direct.ts",
+    "start:server:json": "tsx src/json/server/direct.ts",
+    "start:server:python": "tsx src/python/server/direct.ts",
+    "langium:generate:statemachine": "langium generate --file ./src/langium/statemachine/config/langium-config.json",
+    "langium:generate": "npm run langium:generate:statemachine",
+    "extract:docker": "tsx ./resources/clangd/scripts/extractDockerFiles.ts",
+    "production:clean": "tsx ../../scripts/remove.ts ./production",
+    "production:copy:mini-coi": "mini-coi --service-worker production/mini-coi.js",
+    "production:build": "npm run production:clean && vite --config vite.config.deploy.ts build && npm run production:copy:mini-coi",
+    "production:preview:build": "npm run production:clean && vite --config vite.config.preview.ts build && npm run production:copy:mini-coi",
+    "production:preview": "vite --config vite.config.preview.ts preview -d"
+  },
+  "dependencies": {
+    "@codingame/monaco-vscode-api": "^37.6.0",
+    "@codingame/monaco-vscode-cpp-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-debug-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-editor-api": "^37.6.0",
+    "@codingame/monaco-vscode-environment-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-explorer-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-extensions-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-files-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-groovy-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-java-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-javascript-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-json-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-json-language-features-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-keybindings-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-lifecycle-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-localization-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-log-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-outline-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-preferences-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-python-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-remote-agent-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-search-result-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-search-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-secret-storage-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-standalone-css-language-features": "^37.6.0",
+    "@codingame/monaco-vscode-standalone-html-language-features": "^37.6.0",
+    "@codingame/monaco-vscode-standalone-json-language-features": "^37.6.0",
+    "@codingame/monaco-vscode-standalone-typescript-language-features": "^37.6.0",
+    "@codingame/monaco-vscode-storage-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-testing-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-theme-defaults-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-typescript-basics-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-typescript-language-features-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-view-banner-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-view-status-bar-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-view-title-bar-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-views-service-override": "^37.6.0",
+    "@typefox/monaco-editor-react": "~8.0.3",
+    "cors": "~2.8.6",
+    "express": "~5.3.0",
+    "jszip": "~3.10.2",
+    "langium": "~4.4.0",
+    "langium-minilogo": "~4.2.2",
+    "monaco-languageclient": "~11.0.3",
+    "pyright": "~1.1.414",
+    "react": "~19.3.1",
+    "react-dom": "~19.3.1",
+    "request-light": "~0.8.0",
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@^37.6.0",
+    "vscode-json-languageservice": "~5.7.2",
+    "vscode-languageclient": "~10.1.2",
+    "vscode-languageserver": "~10.1.2",
+    "vscode-languageserver-protocol": "~3.18.4",
+    "vscode-languageserver-textdocument": "~1.0.15",
+    "vscode-uri": "~3.2.0",
+    "vscode-ws-jsonrpc": "~4.0.3",
+    "ws": "~8.22.0",
+    "wtd-core": "~4.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "~2.8.19",
+    "@types/emscripten": "~1.41.6",
+    "@types/express": "~5.0.6",
+    "@types/ws": "~8.18.1",
+    "langium-cli": "~4.4.0",
+    "mini-coi": "~0.4.2",
+    "vite-plugin-static-copy": "~4.1.1",
+    "vscode-languageserver-types": "~3.18.3"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  }
+}

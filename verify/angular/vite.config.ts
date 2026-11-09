@@ -1,0 +1,46 @@
+/**
+ * Copyright (c) 2026 TypeFox and others.
+ * Licensed under the MIT License. See LICENSE in the package root for license information.
+ */
+
+import angular from '@analogjs/vite-plugin-angular';
+import path from 'path';
+import { defineConfig } from 'vite';
+
+export default defineConfig(({ command }) => {
+  console.log(`Running: ${command}`);
+  return {
+    build: {
+      emptyOutDir: true,
+      assetsInlineLimit: 0,
+      outDir: path.resolve(import.meta.dirname, 'production')
+    },
+    worker: {
+      format: 'es'
+    },
+    esbuild: {
+      minifySyntax: false
+    },
+    plugins: [angular()],
+    optimizeDeps: {
+      include: [
+        'vscode/localExtensionHost',
+        'vscode-jsonrpc',
+        'vscode-languageclient',
+        'vscode-languageserver',
+        'vscode-languageserver/browser',
+        'vscode-languageserver-protocol'
+      ]
+    },
+    server: {
+      port: 8084,
+      cors: {
+        origin: '*'
+      },
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Cross-Origin-Embedder-Policy': 'require-corp'
+      }
+    }
+  };
+});

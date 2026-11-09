@@ -1,0 +1,88 @@
+name: Clangd LS Image
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  REPO_NAME: ${{ github.repository }}
+  PATH_CONTEXT: ./packages/examples/resources/clangd
+  CONTAINER_NAME_CONFIGURE: clangd-wasm-configure
+  CONTAINER_NAME_BUILD: clangd-wasm-build
+
+jobs:
+  images-clangd-wasm:
+    name: Build & Deploy Clangd LS
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    timeout-minutes: 150
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (configure)
+        id: meta_configure
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.CONTAINER_NAME_CONFIGURE }}
+          # enforce latest tag for now
+          tags: |
+            type=raw,value=latest
+
+      - name: Build & Push (configure)
+        id: push_configure
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: ${{ env.PATH_CONTEXT }}
+          file: ${{ env.PATH_CONTEXT }}/configure.Dockerfile
+          push: true
+          tags: ${{ steps.meta_configure.outputs.tags }}
+          labels: ${{ steps.meta_configure.outputs.labels }}
+
+      - name: Attest (configure)
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.CONTAINER_NAME_CONFIGURE }}
+          subject-digest: ${{ steps.push_configure.outputs.digest }}
+          push-to-registry: true
+
+      - name: Extract metadata (build)
+        id: meta_build
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.CONTAINER_NAME_BUILD }}
+          # enforce latest tag for now
+          tags: |
+            type=raw,value=latest
+
+      - name: Build & Push (build)
+        id: push_build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: ${{ env.PATH_CONTEXT }}
+          file: ${{ env.PATH_CONTEXT }}/build.Dockerfile
+          push: true
+          tags: ${{ steps.meta_build.outputs.tags }}
+          labels: ${{ steps.meta_build.outputs.labels }}
+
+      - name: Attest (build)
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.CONTAINER_NAME_BUILD }}
+          subject-digest: ${{ steps.push_build.outputs.digest }}
+          push-to-registry: true

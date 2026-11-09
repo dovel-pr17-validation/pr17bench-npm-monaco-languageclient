@@ -1,0 +1,77 @@
+name: Publish via OIDC
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run'
+        required: true
+        default: false
+        type: boolean
+      npm-tag:
+        description: 'Tag override for npm publish'
+        required: true
+        default: 'latest'
+        type: string
+
+jobs:
+  publish_oidc:
+    runs-on: ubuntu-latest
+    environment: publish
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          cache: false
+
+      - name: Install
+        shell: bash
+        run: |
+          npm ci
+
+      - name: Versions Report
+        shell: bash
+        run: |
+          npm run report:versions
+
+      - name: Build
+        shell: bash
+        run: |
+          npm run build
+
+      - name: Lint & Format
+        shell: bash
+        run: |
+          npm run lint
+          npm run fmt
+
+      - name: Test
+        shell: bash
+        run: |
+          npm run test:ci:tags
+
+      - name: Publish
+        uses: TypeFox/gh-publish-npm@7183224bef010236e419a2367208633ff284337a # v0.5.0
+        with:
+          dry-run: ${{ github.event.inputs.dry-run }}
+          npm-tag: ${{ github.event.inputs.npm-tag }}
+          verbose: true
+          npm-packages: |
+            packages/vscode-ws-jsonrpc
+            packages/client
+            packages/wrapper-react
+
+      - name: Check npm logs
+        if: success() || failure()
+        shell: bash
+        run: |
+          ./.github/workflows/scripts/checkNpmLogs.sh

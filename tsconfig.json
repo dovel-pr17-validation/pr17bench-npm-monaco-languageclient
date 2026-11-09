@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    // Enable project compilation
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": false,
+    "stripInternal": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    // Disable type checking of declaration files, enable in packages where it makes sense if any
+    "skipLibCheck": true,
+    // Disallow inconsistently-cased references to the same file
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "experimentalDecorators": true,
+    "jsx": "react",
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
+  },
+  "include": [
+    "**/src/**/*.ts",
+    "**/test/**/*.ts",
+    "**/src/**/*.tsx",
+    "**/test/**/*.tsx",
+    "**/packages/*/*.ts",
+    "**/packages/*/*.js",
+    "**/build/**/*.mts",
+    "*.js",
+    "*.ts",
+    "*.d.ts"
+  ],
+  "exclude": ["**/dist/**/*", "**/lib/**/*", "**/node_modules/**/*"]
+}

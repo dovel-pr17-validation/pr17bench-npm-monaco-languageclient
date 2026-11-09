@@ -1,0 +1,64 @@
+name: Build, Lint and Test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: mise-en-place
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Install
+        shell: bash
+        run: |
+          npm ci
+
+      - name: Versions Report
+        shell: bash
+        run: |
+          npm run report:versions
+
+      - name: Build
+        shell: bash
+        run: |
+          npm run build
+
+      - name: Lint & Format
+        shell: bash
+        run: |
+          npm run lint
+          npm run fmt
+
+      - name: Test
+        shell: bash
+        run: |
+          npm run test:ci:tags
+
+      - name: Publish Dry-Run
+        # dry-run is always performed
+        uses: TypeFox/gh-publish-npm@0c4ee5a844ccb61c4092fc439f7db21c4a2f0ddb # v0.4.0
+        with:
+          dry-run: true
+          npm-tag: 'next'
+          verbose: true
+          npm-packages: |
+            packages/vscode-ws-jsonrpc
+            packages/client
+            packages/wrapper-react

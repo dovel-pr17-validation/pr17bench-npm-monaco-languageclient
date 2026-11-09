@@ -1,0 +1,13 @@
+bundle
+dist
+lib
+node_modules
+*.tsbuildinfo
+__screenshots__
+.chrome
+.vitest
+
+# draw.io backup files
+*.bkp
+
+coverage

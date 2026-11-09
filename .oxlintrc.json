@@ -1,0 +1,118 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "oxc",
+    "promise",
+    "import"
+    // these rule sets may be added later
+    // "vitest"
+    // "react"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2022": true,
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "**/.chrome/**/*",
+    "**/node_modules/**/*",
+    "**/dist/**/*",
+    "**/lib/**/*",
+    "**/out/**/*",
+    "**/bin/**/*",
+    "**/resources/**/*",
+    "**/production/**/*",
+    "**/public/**/*",
+    "**/.next/**/*",
+    "**/.pnp.cjs"
+  ],
+  // see: https://oxc.rs/docs/guide/usage/linter/rules.html
+  "rules": {
+    "eqeqeq": "error",
+    // currently in oxlint's nursery (=under development)
+    "getter-return": "error",
+    "guard-for-in": "error",
+    "no-array-constructor": "error",
+    "no-bitwise": "error",
+    "no-case-declarations": "error",
+    "no-empty": "error",
+    "no-empty-character-class": "error",
+    "no-empty-pattern": "error",
+    "no-empty-static-block": "error",
+    "no-fallthrough": "error",
+    "no-import-assign": "error",
+    "no-inner-declarations": "off",
+    "no-labels": "error",
+    "no-misleading-character-class": "error",
+    "no-new-wrappers": "error",
+    "no-prototype-builtins": "error",
+    "no-redeclare": "error",
+    "no-regex-spaces": "error",
+    "no-throw-literal": "error",
+    "no-unexpected-multiline": "error",
+    // currently in oxlint's nursery (=under development)
+    "no-unreachable": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "caughtErrorsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+
+    // all typescript related rules
+    "typescript/adjacent-overload-signatures": "error",
+    "typescript/array-type": [
+      "error",
+      {
+        "default": "array-simple"
+      }
+    ],
+    "typescript/ban-ts-comment": "error",
+    // currently in oxlint's nursery (=under development)
+    "typescript/dot-notation": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-namespace": "off",
+    // currently in oxlint's nursery (=under development)
+    "typescript/no-unnecessary-condition": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unnecessary-type-parameters": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "typescript/no-unused-expressions": "error",
+    "typescript/no-non-null-assertion": "off",
+    "typescript/no-require-imports": "error",
+    "typescript/no-var-requires": "error",
+    "typescript/parameter-properties": "error",
+    "typescript/prefer-for-of": "error",
+    "typescript/prefer-namespace-keyword": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    // currently in oxlint's nursery (=under development)
+    "typescript/prefer-optional-chain": "error",
+    "typescript/strict-boolean-expressions": [
+      "error",
+      {
+        "allowString": false,
+        "allowNumber": false,
+        "allowNullableObject": false
+      }
+    ],
+    "typescript/triple-slash-reference": "error",
+    // all import related rules
+    "import/no-duplicates": "error",
+    "import/first": "error",
+    "import/export": "error",
+    "import/default": "error",
+    "import/named": "error"
+  }
+}

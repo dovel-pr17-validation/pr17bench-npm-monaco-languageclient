@@ -1,0 +1,96 @@
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) 2024 TypeFox and others.
+ * Licensed under the MIT License. See LICENSE in the package root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+import { defineConfig } from 'vite';
+import fs from 'node:fs';
+import * as path from 'node:path';
+import vsixPlugin from '@codingame/monaco-vscode-rollup-vsix-plugin';
+
+const clangdWasmLocation = 'packages/examples/resources/clangd/wasm/clangd.wasm';
+
+/// <reference lib="rolldown-vite/config" />
+
+export const definedViteConfig = defineConfig({
+  build: {
+    rolldownOptions: {
+      input: {
+        index: path.resolve(import.meta.dirname, 'index.html'),
+        json_classic: path.resolve(import.meta.dirname, 'packages/examples/json_classic.html'),
+        json: path.resolve(import.meta.dirname, 'packages/examples/json.html'),
+        browser: path.resolve(import.meta.dirname, 'packages/examples/browser.html'),
+        langium_extended: path.resolve(import.meta.dirname, 'packages/examples/langium_extended.html'),
+        statemachine: path.resolve(import.meta.dirname, 'packages/examples/statemachine.html'),
+        python: path.resolve(import.meta.dirname, 'packages/examples/python.html'),
+        groovy: path.resolve(import.meta.dirname, 'packages/examples/groovy.html'),
+        clangd: path.resolve(import.meta.dirname, 'packages/examples/clangd.html'),
+        appPlayground: path.resolve(import.meta.dirname, 'packages/examples/appPlayground.html'),
+        twoLanguageClients: path.resolve(import.meta.dirname, 'packages/examples/two_language_clients.html'),
+        reactAppPlayground: path.resolve(import.meta.dirname, 'packages/examples/react_appPlayground.html'),
+        reactStatemachine: path.resolve(import.meta.dirname, 'packages/examples/react_statemachine.html'),
+        reactPython: path.resolve(import.meta.dirname, 'packages/examples/react_python.html'),
+        tsExtHost: path.resolve(import.meta.dirname, 'packages/examples/tsExtHost.html'),
+        minilogo: path.resolve(import.meta.dirname, 'packages/examples/minilogo.html')
+      }
+    }
+  },
+  server: {
+    port: 20001,
+    host: '0.0.0.0',
+    cors: {
+      origin: '*'
+    },
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    },
+    watch: {
+      ignored: ['**/.chrome/**/*', './verify/**/*']
+    }
+  },
+  optimizeDeps: {
+    include: ['langium', 'langium/lsp', 'langium/grammar', 'vscode-languageserver/browser']
+  },
+  plugins: [
+    {
+      // For the *-language-features extensions which use SharedArrayBuffer
+      name: 'configure-response-headers',
+      apply: 'serve',
+      configureServer: (server) => {
+        server.middlewares.use((_req, res, next) => {
+          res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+          next();
+        });
+      }
+    },
+    {
+      name: 'bypass-spa-fallback',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          // Do not resolve a specific url back to index.html
+          if (req.url?.includes('packages/client/test/support/unreachableFile.ts') === true) {
+            res.statusCode = 404;
+            res.end('Not Found');
+            return;
+          }
+
+          next();
+        });
+      }
+    },
+    vsixPlugin()
+  ],
+  define: {
+    rootDirectory: JSON.stringify(import.meta.dirname),
+    // Server-provided Content-Length header may be gzipped, get the real size in build time
+    __WASM_SIZE__: fs.existsSync(clangdWasmLocation) ? fs.statSync(clangdWasmLocation).size : 0
+  },
+  worker: {
+    format: 'es'
+  }
+});
+
+export default definedViteConfig;

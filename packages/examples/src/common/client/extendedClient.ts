@@ -1,0 +1,145 @@
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) 2025 TypeFox and others.
+ * Licensed under the MIT License. See LICENSE in the package root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+import {
+  RegisteredFileSystemProvider,
+  RegisteredMemoryFile,
+  registerFileSystemOverlay
+} from '@codingame/monaco-vscode-files-service-override';
+import getKeybindingsServiceOverride from '@codingame/monaco-vscode-keybindings-service-override';
+import * as vscode from 'vscode';
+// this is required syntax highlighting
+import { LogLevel } from '@codingame/monaco-vscode-api';
+import type { ILogger } from '@codingame/monaco-vscode-log-service-override';
+import { type ConnectionConfigOptions } from 'monaco-languageclient/common';
+import { EditorApp, type EditorAppConfig } from 'monaco-languageclient/editorApp';
+import { LanguageClientWrapper, LcWebSocket, type LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
+import { MonacoVscodeApiWrapper, type MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
+import {
+  configureDefaultWorkerFactory,
+  useWorkerFactory,
+  type PossibleWorkerLabelsExtended,
+  type WorkerLoader
+} from 'monaco-languageclient/workerFactory';
+
+export const runExtendedClient = async (lsConfig: ExampleLsConfig, helloCode: string) => {
+  const helloUri = vscode.Uri.file(`${lsConfig.basePath}/workspace/hello.${lsConfig.languageId}`);
+  const fileSystemProvider = new RegisteredFileSystemProvider(false);
+  fileSystemProvider.registerFile(new RegisteredMemoryFile(helloUri, helloCode));
+  registerFileSystemOverlay(1, fileSystemProvider);
+
+  const htmlContainer = document.getElementById('monaco-editor-root')!;
+
+  let monacoWorkerFactory;
+  if (lsConfig.workerLoaders !== undefined) {
+    monacoWorkerFactory = (logger?: ILogger) => {
+      useWorkerFactory({
+        workerLoaders: lsConfig.workerLoaders?.(),
+        logger
+      });
+    };
+  } else {
+    monacoWorkerFactory = configureDefaultWorkerFactory;
+  }
+
+  const vscodeApiConfig: MonacoVscodeApiConfig = {
+    $type: 'extended',
+    viewsConfig: {
+      $type: 'EditorService',
+      htmlContainer
+    },
+    logLevel: LogLevel.Debug,
+    serviceOverrides: {
+      ...getKeybindingsServiceOverride()
+    },
+    userConfiguration: {
+      json: JSON.stringify({
+        'workbench.colorTheme': 'Default Dark Modern',
+        'editor.guides.bracketPairsHorizontal': 'active',
+        'editor.lightbulb.enabled': 'On',
+        'editor.wordBasedSuggestions': 'off',
+        'editor.experimental.asyncTokenization': true
+      })
+    },
+    monacoWorkerFactory
+  };
+
+  const startOptions = {
+    onCall: () => {
+      console.log('Connected to socket.');
+    },
+    reportStatus: true
+  };
+  const stopOptions = {
+    onCall: () => {
+      console.log('Disconnected from socket.');
+    },
+    reportStatus: true
+  };
+
+  const webSocketUrl = `ws://localhost:${lsConfig.port}${lsConfig.path}`;
+  const connectionConfigOptions: ConnectionConfigOptions = {
+    $family: 'WebSocket',
+    realization: () => new LcWebSocket(),
+    webSocketUrl: webSocketUrl,
+    startOptions,
+    stopOptions
+  };
+
+  const languageClientConfig: LanguageClientConfig = {
+    languageId: lsConfig.languageId,
+    connection: {
+      options: connectionConfigOptions
+    },
+    clientOptions: {
+      documentSelector: [lsConfig.languageId],
+      workspaceFolder: {
+        index: 0,
+        name: 'workspace',
+        uri: vscode.Uri.parse(`${lsConfig.basePath}/workspace`)
+      }
+    }
+  };
+
+  const editorAppConfig: EditorAppConfig = {
+    codeResources: {
+      modified: {
+        text: helloCode,
+        uri: helloUri.path
+      }
+    }
+  };
+
+  // perform global init
+  const apiWrapper = new MonacoVscodeApiWrapper(vscodeApiConfig);
+  await apiWrapper.start();
+
+  const lcWrapper = new LanguageClientWrapper(languageClientConfig);
+  const editorApp = new EditorApp(editorAppConfig);
+
+  try {
+    document.querySelector('#button-start')?.addEventListener('click', async () => {
+      await editorApp.start(htmlContainer);
+      await lcWrapper.start();
+
+      // open files, so the LS can pick it up
+      await vscode.workspace.openTextDocument(helloUri);
+    });
+    document.querySelector('#button-dispose')?.addEventListener('click', async () => {
+      await editorApp.dispose();
+      await lcWrapper.dispose();
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export type ExampleLsConfig = {
+  port: number;
+  path: string;
+  basePath: string;
+  languageId: string;
+  workerLoaders?: () => Partial<Record<PossibleWorkerLabelsExtended, WorkerLoader>>;
+};

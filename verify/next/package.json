@@ -1,0 +1,62 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "tsx ../../scripts/remove.ts .next dist lib bundle *.tsbuildinfo",
+    "verify": "npm ci && npm run dev:next",
+    "verify:ci": "npm ci && npm run build -d",
+    "dev:next": "npm run bundle && npm run build:tsc && next dev -p 8083",
+    "dev:vite": "npm run bundle && npm run build:tsc && vite --config vite.config.ts",
+    "build": "npm run bundle && next build",
+    "bundle": "npm run bundle:config && npm run bundle:editorWorker && npm run bundle:textmateWorker",
+    "bundle:config": "vite --config vite.config.bundle.ts build",
+    "bundle:editorWorker": "vite --config vite.config.editorWorker.ts build",
+    "bundle:extHostWorker": "vite --config vite.config.extHostWorker.ts build",
+    "bundle:extensionService": "vite --config vite.config.extensionService.ts build",
+    "bundle:textmateWorker": "vite --config vite.config.textmateWorker.ts build",
+    "bundle:tsserver": "vite --config vite.config.tsserver.ts build",
+    "build:tsc": "tsc --build ",
+    "watch:tsc": "tsc --build --watch",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@codingame/monaco-vscode-api": "^37.6.0",
+    "@codingame/monaco-vscode-editor-api": "^37.6.0",
+    "@codingame/monaco-vscode-extensions-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-keybindings-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-textmate-service-override": "^37.6.0",
+    "@codingame/monaco-vscode-typescript-basics-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-typescript-language-features-default-extension": "^37.6.0",
+    "@codingame/monaco-vscode-views-service-override": "^37.6.0",
+    "@typefox/monaco-editor-react": "../../packages/wrapper-react",
+    "langium": "~4.4.0",
+    "monaco-languageclient": "../../packages/client",
+    "next": "~16.4.1",
+    "react": "~19.3.1",
+    "react-dom": "~19.3.1",
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@^37.6.0",
+    "vscode-languageclient": "~10.1.2",
+    "vscode-languageserver": "~10.1.2"
+  },
+  "devDependencies": {
+    "@types/react-dom": "~19.3.0",
+    "typescript": "~7.0.2",
+    "vite": "~8.3.4"
+  },
+  "overrides": {
+    "@typefox/monaco-editor-react": "../../packages/wrapper-react",
+    "brace-expansion": "~5.0.12",
+    "dompurify": "~3.4.16",
+    "monaco-languageclient": "../../packages/client",
+    "sharp": "~0.35.5",
+    "source-map-js": "~1.2.2",
+    "vscode-ws-jsonrpc": "../../packages/vscode-ws-jsonrpc"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "allowScripts": {
+    "sharp": false
+  }
+}
